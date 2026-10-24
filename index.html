@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Arch-dinamic: a living notch for Arch Linux & i3wm</title>
+  <meta name="description" content="Arch-dinamic mengubah bilah atas layar Arch Linux menjadi dynamic island hidup untuk kontrol sistem, musik & lirik sinkron, task manager, dan jadwal kuliah." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --void: #03040a;
+      --panel: #0a0d18;
+      --card: rgba(16, 20, 31, 0.78);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --ink: #eceff7;
+      --mist: #8c94a8;
+      --cyan: #1793d1;
+      --cyan-bright: #38bdf8;
+      --indigo: #2d5bff;
+      --violet: #7b4bff;
+      --green: #4ade80;
+      --amber: #f59e0b;
+      --glow: linear-gradient(90deg, var(--cyan), var(--indigo) 55%, var(--violet));
+      --font: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--void);
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 17px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(ellipse at 50% -10%, rgba(23, 147, 209, 0.22), transparent 60%),
+        radial-gradient(circle at 80% 25%, rgba(45, 91, 255, 0.08), transparent 40%);
+    }
+
+    a { color: inherit; }
+    .wrap { width: min(1080px, 100% - 48px); margin-inline: auto; }
+
+    /* Top bar & living mascot notch */
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(3, 4, 10, 0.85);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+    .brand svg { width: 26px; height: 26px; }
+    .brand span b { color: var(--cyan-bright); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { text-decoration: none; color: var(--mist); font-size: 14.5px; font-weight: 600; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+
+    /* Living Mascot Notch atop the screen */
+    .mascot-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 28px;
+      background: #000;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 4px 20px rgba(23, 147, 209, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: none;
+    }
+    .eyes { display: flex; gap: 14px; }
+    .eye {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 6px 1px rgba(56, 189, 248, 0.8);
+      animation: blink 4s infinite;
+    }
+    @keyframes blink {
+      0%, 92%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 90px 0 30px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 99px;
+      background: rgba(23, 147, 209, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--cyan-bright);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan-bright);
+      box-shadow: 0 0 8px var(--cyan-bright);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .hero h1 {
+      margin: 0 auto;
+      max-width: 14ch;
+      font-size: clamp(42px, 7vw, 84px);
+      line-height: 0.98;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .lede {
+      margin: 24px auto 0;
+      max-width: 35em;
+      color: var(--mist);
+      font-size: 19px;
+      line-height: 1.55;
+    }
+    .cta {
+      margin-top: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #1793d1 0%, #0284c7 100%);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 15px 32px;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(23, 147, 209, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(23, 147, 209, 0.6);
+    }
+    .cta-sub {
+      font-size: 12.5px;
+      color: var(--mist);
+      font-family: var(--mono);
+    }
+
+    /* Interactive Live Island Simulator */
+    .mockup-container {
+      padding: 40px 0 70px;
+    }
+    .mockup-frame {
+      background: #090c16;
+      border: 1px solid var(--card-border);
+      border-radius: 22px;
+      padding: 20px 24px 36px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+    .frame-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    .frame-dots { display: flex; gap: 7px; }
+    .f-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .f-dot.r { background: #ef4444; }
+    .f-dot.y { background: #eab308; }
+    .f-dot.g { background: #22c55e; }
+    .frame-hint {
+      font-size: 12px;
+      color: var(--mist);
+      font-family: var(--mono);
+    }
+
+    /* The Interactive Island Card */
+    .island-center {
+      display: flex;
+      justify-content: center;
+    }
+    .interactive-card {
+      background: rgba(16, 18, 27, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
+      width: 440px;
+      padding: 12px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 8px;
+    }
+    .tab-pills {
+      display: flex;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 99px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .t-btn {
+      background: transparent;
+      border: none;
+      border-radius: 99px;
+      color: var(--mist);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .t-btn.active {
+      background: rgba(23, 147, 209, 0.2);
+      color: var(--cyan-bright);
+    }
+    .p-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--mist);
+      cursor: pointer;
+    }
+    .p-btn:hover { color: #f87171; background: rgba(239, 68, 68, 0.15); }
+
+    .pane-view { display: none; }
+    .pane-view.active { display: block; animation: fadeIn 0.2s ease-out; }
+
+    /* Control pane */
+    .c-sliders { display: flex; flex-direction: column; gap: 8px; }
+    .c-slide { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--mist); }
+    .c-bar { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 99px; overflow: hidden; }
+    .c-fill { height: 100%; border-radius: 99px; }
+    .c-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+    .c-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; padding: 7px 10px; font-size: 11px; }
+    .c-card b { display: block; color: #fff; font-size: 11.5px; }
+
+    /* Music pane */
+    .m-wrap { display: flex; gap: 14px; align-items: center; }
+    .m-cover { width: 68px; height: 68px; border-radius: 10px; background: linear-gradient(135deg, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+    .m-info { flex: 1; min-width: 0; }
+    .m-title { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .m-artist { font-size: 11px; color: var(--mist); }
+    .m-ctrls { display: flex; gap: 10px; margin-top: 8px; }
+    .m-circle { width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .m-circle.play { background: var(--cyan); }
+
+    /* Tasks pane */
+    .t-list { display: flex; flex-direction: column; gap: 6px; }
+    .t-item { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); padding: 7px 10px; border-radius: 7px; font-size: 11.5px; }
+    .t-box { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid rgba(255, 255, 255, 0.35); display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .t-box.done { background: #10b981; border-color: #10b981; color: #fff; }
+    .t-text.done { text-decoration: line-through; text-decoration-color: var(--green); color: var(--green); }
+    .t-text.pend { color: #f1f5f9; }
+    .t-remind { margin-left: auto; font-size: 9px; color: var(--amber); background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 1px 5px; border-radius: 4px; }
+
+    /* Kuliah pane */
+    .k-list { display: flex; flex-direction: column; gap: 6px; }
+    .k-card { background: rgba(255, 255, 255, 0.04); border-left: 3px solid var(--cyan); border-radius: 0 8px 8px 0; padding: 7px 10px; font-size: 11.5px; }
+    .k-title { font-weight: 700; color: #fff; }
+    .k-meta { display: flex; gap: 8px; font-size: 10.5px; color: var(--mist); margin-top: 3px; }
+
+    /* Feature Sections */
+    .sec-title {
+      font-size: clamp(30px, 4.5vw, 48px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-align: center;
+    }
+    .sec-lede {
+      margin: 14px auto 48px;
+      max-width: 32em;
+      color: var(--mist);
+      text-align: center;
+      font-size: 17.5px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 22px;
+      margin-bottom: 90px;
+    }
+    .f-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+    .f-card:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateY(-3px);
+      background: rgba(18, 24, 38, 0.9);
+    }
+    .f-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: rgba(23, 147, 209, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+    .f-card h3 { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+    .f-card p { font-size: 14.5px; color: var(--mist); line-height: 1.55; }
+
+    /* Tech Specs / Light Section */
+    .light-section {
+      background: #060913;
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 90px;
+    }
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .spec-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .spec-val { font-size: 32px; font-weight: 800; color: var(--cyan-bright); font-family: var(--mono); }
+    .spec-label { font-size: 13px; color: var(--mist); margin-top: 4px; }
+
+    /* Install terminal box */
+    .install-sec {
+      text-align: center;
+      margin-bottom: 90px;
+    }
+    .term-box {
+      background: #05070e;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 18px 24px;
+      max-width: 680px;
+      margin: 24px auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .term-cmd { font-family: var(--mono); font-size: 13.5px; color: var(--cyan-bright); white-space: nowrap; overflow-x: auto; }
+    .term-copy {
+      background: rgba(23, 147, 209, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .term-copy:hover { background: var(--cyan); }
+
+    /* FAQ */
+    .faq-list {
+      max-width: 720px;
+      margin: 0 auto 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    details {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    details[open] { border-color: rgba(56, 189, 248, 0.35); }
+    summary { font-weight: 700; font-size: 16px; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    summary::after { content: "+"; font-size: 20px; color: var(--cyan-bright); font-weight: 400; }
+    details[open] summary::after { content: "−"; }
+    details p { margin-top: 10px; font-size: 14.5px; color: var(--mist); line-height: 1.6; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--mist);
+      font-size: 14px;
+    }
+    footer a { color: var(--cyan-bright); text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar with living mascot notch -->
+  <header class="bar">
+    <a href="#" class="brand">
+      <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M150 25L255 245C225 220 200 215 175 225C185 200 175 180 150 170C125 180 115 200 125 225C100 215 75 220 45 245L150 25Z" fill="#1793d1"/>
+      </svg>
+      <span>Arch-<b>dinamic</b></span>
+    </a>
+
+    <!-- Living Mascot Notch -->
+    <div class="mascot-notch" title="A living notch atop your screen">
+      <div class="eyes">
+        <span class="eye"></span>
+        <span class="eye"></span>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a href="#features">Fitur</a>
+      <a href="#preview">Simulator</a>
+      <a href="#light">Spesifikasi</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/WaLMaN-s/arch-island" target="_blank" style="color: var(--cyan-bright);">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="wrap hero">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>A living notch for Arch Linux & i3wm</span>
+      </div>
+
+      <h1>The top of your screen, <span class="gradient-text">alive.</span></h1>
+
+      <p class="lede">
+        <b>Arch-dinamic</b> mengubah tepi atas layarmu menjadi notch hidup, responsif, dan hemat daya. Kendalikan pemutar musik, lirik tersinkronisasi, task list, jadwal kuliah, hingga kontrol sistem i3wm tanpa repot.
+      </p>
+
+      <div class="cta">
+        <!-- Direct download to repo -->
+        <a href="https://github.com/WaLMaN-s/arch-island" target="_blank" class="btn-download">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Get Arch-dinamic on GitHub</span>
+        </a>
+        <span class="cta-sub">Free • Open Source (MIT) • Built for Arch Linux & i3wm</span>
+      </div>
+    </section>
+
+    <!-- Interactive Simulator -->
+    <section id="preview" class="wrap mockup-container">
+      <div class="mockup-frame">
+        <div class="frame-bar">
+          <div class="frame-dots">
+            <span class="f-dot r"></span>
+            <span class="f-dot y"></span>
+            <span class="f-dot g"></span>
+          </div>
+          <span class="frame-hint">arch-dinamic: simulator (Gunakan tombol panah keyboard ← / → atau klik tab)</span>
+          <div></div>
+        </div>
+
+        <div class="island-center">
+          <div class="interactive-card">
+            <div class="card-topbar">
+              <div class="tab-pills">
+                <button class="t-btn active" onclick="setTab('controls')">🎚️ Control</button>
+                <button class="t-btn" onclick="setTab('music')">🎵 Music</button>
+                <button class="t-btn" onclick="setTab('tasks')">📝 Tasks</button>
+                <button class="t-btn" onclick="setTab('kuliah')">🎓 Kuliah</button>
+              </div>
+              <button class="p-btn" title="Power Menu">⏻</button>
+            </div>
+
+            <!-- Controls Pane -->
+            <div id="pv-controls" class="pane-view active">
+              <div class="c-sliders">
+                <div class="c-slide">
+                  <span>Audio</span>
+                  <div class="c-bar"><div class="c-fill" style="width: 78%; background: var(--cyan);"></div></div>
+                  <span>78%</span>
+                </div>
+                <div class="c-slide">
+                  <span>Mic</span>
+                  <div class="c-bar"><div class="c-fill" style="width: 60%; background: #a855f7;"></div></div>
+                  <span>60%</span>
+                </div>
+                <div class="c-slide">
+                  <span>Brightness</span>
+                  <div class="c-bar"><div class="c-fill" style="width: 90%; background: #eab308;"></div></div>
+                  <span>90%</span>
+                </div>
+              </div>
+              <div class="c-metrics">
+                <div class="c-card">📶 WiFi: <b>Arch-WiFi (88%)</b></div>
+                <div class="c-card">⚡ Baterai: <b>96% (Charging 18W)</b></div>
+              </div>
+            </div>
+
+            <!-- Music Pane -->
+            <div id="pv-music" class="pane-view">
+              <div class="m-wrap">
+                <div class="m-cover">🎧</div>
+                <div class="m-info">
+                  <div class="m-title">Midnight City</div>
+                  <div class="m-artist">M83 • Synced Lyrics Active</div>
+                  <div class="m-ctrls">
+                    <button class="m-circle">⏮</button>
+                    <button class="m-circle play">⏸</button>
+                    <button class="m-circle">⏭</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tasks Pane -->
+            <div id="pv-tasks" class="pane-view">
+              <div class="t-list">
+                <div class="t-item">
+                  <div class="t-box done">✓</div>
+                  <span class="t-text done">Laporan praktikum robotika cerdas</span>
+                </div>
+                <div class="t-item">
+                  <div class="t-box"></div>
+                  <span class="t-text pend">Revisi diagram SRS Sistem Informasi</span>
+                  <span class="t-remind">⏳ Belum Selesai</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kuliah Pane -->
+            <div id="pv-kuliah" class="pane-view">
+              <div class="k-list">
+                <div class="k-card">
+                  <div class="k-title">Praktikum Robotika Cerdas</div>
+                  <div class="k-meta"><span>⏱️ 07:30 - 09:30</span><span>📍 link (Online)</span><span>👤 TIM DOSEN</span></div>
+                </div>
+                <div class="k-card" style="border-left-color: #a855f7;">
+                  <div class="k-title">Pengelolaan Proyek Sistem Informasi</div>
+                  <div class="k-meta"><span>⏱️ 08:30 - 12:30</span><span>📍 Ruang G421</span><span>👤 WIDYA SILFIANTI</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="wrap">
+      <h2 class="sec-title">Everything you glance at, in one place.</h2>
+      <p class="sec-lede">Arahkan kursor ke tepi atas layar untuk membuka notch. Pindahkan mouse dan notch akan meluncur kembali ke persembunyiannya.</p>
+
+      <div class="features-grid">
+        <div class="f-card">
+          <div class="f-icon">🎛️</div>
+          <h3>Control Center Lengkap</h3>
+          <p>Kendalikan WiFi, Bluetooth, Microphone slider, Master Volume, Display Brightness (`brightnessctl`), dan eject USB drive langsung tanpa membuka terminal.</p>
+        </div>
+
+        <div class="f-card">
+          <div class="f-icon">🎵</div>
+          <h3>MPRIS & Synced Lyrics</h3>
+          <p>Deteksi otomatis pemutar musik sistem (Spotify, Firefox, MPV). Dilengkapi lirik lagu sinkron (*timed LRC*) yang auto-scroll mengikuti detik lagu.</p>
+        </div>
+
+        <div class="f-card">
+          <div class="f-icon">📝</div>
+          <h3>TodoList & Pengingat 1 Jam</h3>
+          <p>Scratchpad tugas cepat. Tugas selesai dicoret dengan warna hijau segar, dan sistem otomatis mengirimkan notifikasi desktop setiap 1 jam jika ada tugas pending.</p>
+        </div>
+
+        <div class="f-card">
+          <div class="f-icon">🎓</div>
+          <h3>Jadwal Kuliah & Notif H-1 Malam</h3>
+          <p>Daftar mata kuliah mingguan dengan pengingat otomatis di malam hari (pukul 20:00). Dilengkapi tombol tambah, ubah, dan hapus jadwal sesuai kebutuhan.</p>
+        </div>
+
+        <div class="f-card">
+          <div class="f-icon">⌨️</div>
+          <h3>Navigasi Keyboard Cepat</h3>
+          <p>Gunakan tombol panah keyboard (`←` dan `→`) untuk berpindah antar menu seketika. Terintegrasi mulus dengan alur kerja tiling window manager i3wm.</p>
+        </div>
+
+        <div class="f-card">
+          <div class="f-icon">⏻</div>
+          <h3>Menu Daya Cepat (Power)</h3>
+          <p>Aksi cepat Lock Screen (`i3lock`), Suspend (`systemctl suspend`), Reboot, dan Shutdown dengan klik konfirmasi agar tidak terpencet tidak sengaja.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech Specs / Light Section -->
+    <section id="light" class="wrap light-section">
+      <h2 class="sec-title">So light, you'll forget it's there.</h2>
+      <p class="sec-lede">Dibangun secara native menggunakan binary Rust 2024, Tauri v2, dan Svelte 5 runes. Bukan Electron yang membebani memori.</p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-val">&lt; 40 MB</div>
+          <div class="spec-label">Penggunaan RAM</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-val">0.0%</div>
+          <div class="spec-label">CPU Saat Tucked</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-val">0.3s</div>
+          <div class="spec-label">Animasi Morphing 3D</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-val">100%</div>
+          <div class="spec-label">Privasi (Offline-first)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install Terminal Command -->
+    <section id="install" class="wrap install-sec">
+      <h2 class="sec-title">Pasang di Komputer Anda</h2>
+      <p class="sec-lede">Cukup satu perintah di terminal Arch Linux untuk mengunduh, mengompilasi, dan langsung menjalankannya.</p>
+
+      <div class="term-box">
+        <div class="term-cmd" id="install-cmd">git clone https://github.com/WaLMaN-s/arch-island.git && cd arch-island && npm run update</div>
+        <button class="term-copy" onclick="copyCmd()">Salin</button>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="wrap">
+      <h2 class="sec-title">Pertanyaan Umum (FAQ)</h2>
+      <p class="sec-lede">Beberapa hal yang sering ditanyakan mengenai Arch-dinamic.</p>
+
+      <div class="faq-list">
+        <details>
+          <summary>Apakah Arch-dinamic gratis dan open source?</summary>
+          <p>Ya! Arch-dinamic 100% gratis dan open source di bawah lisensi MIT. Source code lengkap tersedia di GitHub.</p>
+        </details>
+        <details>
+          <summary>Window manager apa saja yang didukung?</summary>
+          <p>Arch-dinamic dioptimalkan khusus untuk <b>i3wm</b> (X11) dengan Picom compositor. Jendela otomatis diset sticky, floating, dan berada di lapisan paling atas.</p>
+        </details>
+        <details>
+          <summary>Media player apa saja yang mendukung lirik sinkron?</summary>
+          <p>Semua pemutar media Linux yang mengekspos standar MPRIS di D-Bus: Spotify, Firefox, Google Chrome, MPV, VLC, Amberol, dan lainnya.</p>
+        </details>
+        <details>
+          <summary>Di mana tugas dan jadwal kuliah saya disimpan?</summary>
+          <p>Semuanya disimpan secara offline di komputer lokal Anda (melalui storage lokal webview Tauri). Tidak ada server eksternal, akun, atau pelacak analitik.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrap">
+      <p>
+        <b>Arch-dinamic</b> — Crafted for Arch Linux by <a href="https://github.com/WaLMaN-s" target="_blank">WaLMaN-s</a>.<br />
+        Download & Source Code di <a href="https://github.com/WaLMaN-s/arch-island" target="_blank">GitHub Repository</a>.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    const TABS = ['controls', 'music', 'tasks', 'kuliah'];
+    let currentTabIdx = 0;
+
+    function setTab(tabName) {
+      document.querySelectorAll('.t-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.pane-view').forEach(p => p.classList.remove('active'));
+
+      const activeBtn = Array.from(document.querySelectorAll('.t-btn')).find(b => b.getAttribute('onclick').includes(tabName));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const targetPane = document.getElementById('pv-' + tabName);
+      if (targetPane) targetPane.classList.add('active');
+
+      currentTabIdx = TABS.indexOf(tabName);
+    }
+
+    // Keyboard arrow navigation on the web simulator
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        currentTabIdx = (currentTabIdx + 1) % TABS.length;
+        setTab(TABS[currentTabIdx]);
+      } else if (e.key === 'ArrowLeft') {
+        currentTabIdx = (currentTabIdx - 1 + TABS.length) % TABS.length;
+        setTab(TABS[currentTabIdx]);
+      }
+    });
+
+    function copyCmd() {
+      const text = document.getElementById('install-cmd').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.term-copy');
+        btn.innerText = 'Tersalin! ✓';
+        setTimeout(() => { btn.innerText = 'Salin'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
