@@ -1,13 +1,16 @@
 # 🏝️ Arch-dinamic Website
 
-Official landing page for **Arch-dinamic** (Dynamic Island & Control Center for Arch Linux + i3wm).
+Official landing page for **Arch-dinamic** — Dynamic Island & Control Center for Arch Linux + i3wm.
 
-## 🚀 Live Preview
-Buka file `index.html` langsung di browser, atau jalankan local server:
+🌐 **Live Website**: [https://walman-s.github.io/arch-dinamic/](https://walman-s.github.io/arch-dinamic/)
+
+---
+
+## 📦 Repositori Aplikasi Utama
+Unduh dan pasang aplikasi desktop Arch-dinamic di repo resminya:
+👉 **[https://github.com/WaLMaN-s/arch-island](https://github.com/WaLMaN-s/arch-island)**
+
+## 🚀 Quick Install (Terminal Arch Linux)
 ```bash
-python3 -m http.server 8000
+git clone https://github.com/WaLMaN-s/arch-island.git && cd arch-island && npm run update
 ```
-Lalu akses `http://localhost:8000`.
-
-## 📦 Repo Aplikasi Utama
-- Repository: [https://github.com/WaLMaN-s/arch-island](https://github.com/WaLMaN-s/arch-island)
